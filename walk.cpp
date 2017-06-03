@@ -63,7 +63,7 @@ public:
 	double physicsRate;
 	double oobillion;
 	struct timespec timeStart, timeEnd, timeCurrent;
-	struct timespec walkTime;
+	struct timespec walkTime, explosionTime;
 	Timers() {
 		physicsRate = 1.0 / 30.0;
 		oobillion = 1.0 / 1e9;
@@ -87,11 +87,15 @@ public:
 	int xres, yres;
 	int walk;
 	int result;
+    int explode;
 	int walkFrame;
+    int explosionFrame;
 	int keys[65536];
 	double delay;
 	Ppmimage *walkImage;
+    Ppmimage *explosionImage;
 	GLuint walkTexture;
+    GLuint explosionTexture;
 	Vec box[20];
 	Global() {
 		done=0;
@@ -100,6 +104,8 @@ public:
 		yres=600;
 		walkFrame=0;
 		walkImage=NULL;
+        explosionFrame=0;
+        explosionImage=NULL;
 		delay = 0.1;
 		for (int i=0; i<20; i++) {
 			box[i][0] = rnd() * xres;
@@ -250,6 +256,12 @@ void initOpengl(void)
 	gl.walkImage = ppm6GetImage("./images/walk.ppm");
 	int w = gl.walkImage->width;
 	int h = gl.walkImage->height;
+
+	system("convert ./images/explosion.jpeg ./images/explosion.ppm");
+	gl.explosionImage = ppm6GetImage("./images/explosion.ppm");
+	int ew = gl.explosionImage->width;
+	int eh = gl.explosionImage->height;
+    
 	//
 	//create opengl texture elements
 	glGenTextures(1, &gl.walkTexture);
@@ -268,6 +280,25 @@ void initOpengl(void)
 							GL_RGBA, GL_UNSIGNED_BYTE, walkData);
 	free(walkData);
 	unlink("./images/walk.ppm");
+
+
+	//create opengl texture elements
+	glGenTextures(1, &gl.explosionTexture);
+	//-------------------------------------------------------------------------
+	//silhouette
+	//this is similar to a sprite graphic
+	//
+	glBindTexture(GL_TEXTURE_2D, gl.explosionTexture);
+	//
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	//
+	//must build a new set of data...
+	unsigned char *explosionData = buildAlphaData(gl.explosionImage);	
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ew, eh, 0,
+							GL_RGBA, GL_UNSIGNED_BYTE, explosionData);
+	free(explosionData);
+	unlink("./images/explosion.ppm");
 	//-------------------------------------------------------------------------
 }
 
@@ -342,9 +373,11 @@ void checkKeys(XEvent *e)
 			timers.recordTime(&timers.walkTime);
 			gl.walk ^= 1;
 			break;
+        case XK_e:
+            timers.recordTime(&timers.explosionTime);
+            gl.explode ^=1;
+            break;
 		case XK_Left:
-			
-			
 			break;
 		case XK_Right:
 			//timers.recordTime(&timers.walkTime);
@@ -466,6 +499,21 @@ void physics(void)
 				gl.box[i][0] -= gl.xres;
 		}
 	}
+
+    if (gl.explode) 
+    {
+            timers.recordTime(&timers.timeCurrent);
+            double timeSpan = timers.timeDiff(&timers.explosionTime, &timers.timeCurrent);
+            if (timeSpan > gl.delay)
+            {
+                    ++gl.explosionFrame;
+                    if (gl.explosionFrame >= 25)
+                    {
+                            gl.explosionFrame -= 25;
+                    }
+                    timers.recordTime(&timers.explosionTime);
+            }
+    }
 }
 
 void render(void)
@@ -509,6 +557,96 @@ void render(void)
 		glEnd();
 		glPopMatrix();
 	}
+
+    if (gl.explode && gl.result == 0)
+    {
+            float h = 100; 
+            float w = 100;
+            glPushMatrix();
+            glColor3f(1.0,1.0,1.0);
+            glBindTexture(GL_TEXTURE_2D, gl.explosionTexture);
+            glEnable(GL_ALPHA_TEST);
+            glAlphaFunc(GL_GREATER, 0.0f);
+            glColor4ub(255,255,255,255);
+            int eix = gl.explosionFrame % 5;
+            int eiy = 0;
+            if (gl.explosionFrame >= 5)
+            {
+                    eiy = 1;
+            }
+            if (gl.explosionFrame >= 10)
+            {
+                    eiy = 2;
+            }
+            if (gl.explosionFrame >= 15)
+            {
+                    eiy = 3;
+            }
+            if (gl.explosionFrame >= 20)
+            {
+                    eiy = 4;
+            }
+            if (gl.explosionFrame >= 25)
+            {
+                    eiy = 5;
+            }
+            float etx = (float)eix / 5.0;
+            float ety = (float)eiy / 5.0;
+
+            glBegin(GL_QUADS);
+            glTexCoord2f(etx, ety+.20);  glVertex2i(cx-w + 150, cy-h);
+            glTexCoord2f(etx, ety);  glVertex2i(cx-w + 150, cy+h);
+            glTexCoord2f(etx+.20, ety);  glVertex2i(cx+w + 150, cy+h);
+            glTexCoord2f(etx+.20, ety+.20);  glVertex2i(cx+w + 150, cy-h);
+            glEnd();
+            glPopMatrix();
+    }
+
+    if (gl.explode && gl.result == 1)
+    {
+            float h = 100; 
+            float w = 100;
+            glPushMatrix();
+            glColor3f(1.0,1.0,1.0);
+            glBindTexture(GL_TEXTURE_2D, gl.explosionTexture);
+            glEnable(GL_ALPHA_TEST);
+            glAlphaFunc(GL_GREATER, 0.0f);
+            glColor4ub(255,255,255,255);
+            int eix = gl.explosionFrame % 5;
+            int eiy = 0;
+            if (gl.explosionFrame >= 5)
+            {
+                    eiy = 1;
+            }
+            if (gl.explosionFrame >= 10)
+            {
+                    eiy = 2;
+            }
+            if (gl.explosionFrame >= 15)
+            {
+                    eiy = 3;
+            }
+            if (gl.explosionFrame >= 20)
+            {
+                    eiy = 4;
+            }
+            if (gl.explosionFrame >= 25)
+            {
+                    eiy = 5;
+            }
+            float etx = (float)eix / 5.0;
+            float ety = (float)eiy / 5.0;
+
+            glBegin(GL_QUADS);
+            glTexCoord2f(etx, ety+.20);  glVertex2i(cx-w - 150, cy-h);
+            glTexCoord2f(etx, ety);  glVertex2i(cx-w - 150, cy+h);
+            glTexCoord2f(etx+.20, ety);  glVertex2i(cx+w - 150, cy+h);
+            glTexCoord2f(etx+.20, ety+.20);  glVertex2i(cx+w - 150, cy-h);
+            glEnd();
+            glPopMatrix();
+    }
+
+
 	float h = 200.0;
 	float w = h * 0.5;
 	glPushMatrix();
@@ -578,6 +716,8 @@ void render(void)
 	ggprint8b(&r, 16, c, "right arrow -> walk right");
 	ggprint8b(&r, 16, c, "left arrow  <- walk left");
 	ggprint8b(&r, 16, c, "frame: %i", gl.walkFrame);
+	ggprint8b(&r, 16, c, "e    Explosion");
+	ggprint8b(&r, 16, c, "frame: %i", gl.explosionFrame);
 }
 
 
