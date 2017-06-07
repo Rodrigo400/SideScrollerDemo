@@ -1,3 +1,6 @@
+//modified by: Rodrigo Garcia-Novoa
+
+
 //3350
 //program: walk.cpp
 //author:  Gordon Griesel
@@ -83,6 +86,7 @@ public:
 	int done;
 	int xres, yres;
 	int walk;
+	int result;
 	int walkFrame;
 	int keys[65536];
 	double delay;
@@ -91,9 +95,9 @@ public:
 	Vec box[20];
 	Global() {
 		done=0;
+		result = 0;
 		xres=800;
 		yres=600;
-		walk=0;
 		walkFrame=0;
 		walkImage=NULL;
 		delay = 0.1;
@@ -417,7 +421,7 @@ void physics(void)
 			timers.recordTime(&timers.walkTime);
 		}
 		for (int i=0; i<20; i++) {
-			gl.box[i][0] -= 2.0 * (0.05 / gl.delay);
+			gl.box[i][0] += 2.0 * (0.05 / gl.delay);
 			if (gl.box[i][0] < -10.0)
 				gl.box[i][0] += gl.xres + 10.0;
 		}
@@ -480,15 +484,37 @@ void render(void)
 		iy = 1;
 	float tx = (float)ix / 8.0;
 	float ty = (float)iy / 2.0;
+	
+	//int result;
 	glBegin(GL_QUADS);
-		if (XK_Right)
+		if (gl.keys[XK_Right])
+		{
+			glTexCoord2f(tx,      ty+.5); glVertex2i(cx-w, cy-h);
+			glTexCoord2f(tx,      ty);    glVertex2i(cx-w, cy+h);
+			glTexCoord2f(tx+.125, ty);    glVertex2i(cx+w, cy+h);
+			glTexCoord2f(tx+.125, ty+.5); glVertex2i(cx+w, cy-h);
+			gl.result = 0;	
+		}
+
+		if (gl.keys[XK_Left])
+		{
+			glTexCoord2f(tx+.125,      ty+.5); glVertex2i(cx-w, cy-h);
+			glTexCoord2f(tx+.125,      ty);    glVertex2i(cx-w, cy+h);
+			glTexCoord2f(tx, ty);    glVertex2i(cx+w, cy+h);
+			glTexCoord2f(tx, ty+.5); glVertex2i(cx+w, cy-h);
+			gl.result = 1;
+		}
+
+		if (gl.keys[XK_Left] == 0 && gl.keys[XK_Right] == 0 && gl.result == 0)
 		{
 			glTexCoord2f(tx,      ty+.5); glVertex2i(cx-w, cy-h);
 			glTexCoord2f(tx,      ty);    glVertex2i(cx-w, cy+h);
 			glTexCoord2f(tx+.125, ty);    glVertex2i(cx+w, cy+h);
 			glTexCoord2f(tx+.125, ty+.5); glVertex2i(cx+w, cy-h);
 		}
-		if (XK_Left)
+
+			
+		if (gl.keys[XK_Left] == 0 && gl.keys[XK_Right] == 0 && gl.result == 1)
 		{
 			glTexCoord2f(tx+.125,      ty+.5); glVertex2i(cx-w, cy-h);
 			glTexCoord2f(tx+.125,      ty);    glVertex2i(cx-w, cy+h);
@@ -496,11 +522,12 @@ void render(void)
 			glTexCoord2f(tx, ty+.5); glVertex2i(cx+w, cy-h);
 		}
 
+
 	glEnd();
 	glPopMatrix();
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_ALPHA_TEST);
-	//
+	glDisable(GL_ALPHA_TEST);	
+	//	
 	unsigned int c = 0x00ffff44;
 	r.bot = gl.yres - 20;
 	r.left = 10;
