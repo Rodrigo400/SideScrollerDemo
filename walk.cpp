@@ -389,6 +389,46 @@ Flt VecNormalize(Vec vec)
 
 void physics(void)
 {
+
+	if (gl.walk && gl.result == 0) {
+		//man is walking...
+		//when time is up, advance the frame.
+		timers.recordTime(&timers.timeCurrent);
+		double timeSpan = timers.timeDiff(&timers.walkTime, &timers.timeCurrent);
+		if (timeSpan > gl.delay) {
+			//advance
+			++gl.walkFrame;
+			if (gl.walkFrame >= 16)
+				gl.walkFrame -= 16;
+			timers.recordTime(&timers.walkTime);
+		}
+		for (int i=0; i<20; i++) {
+			gl.box[i][0] -= 2.0 * (0.05 / gl.delay);
+			if (gl.box[i][0] < -100.0)
+				gl.box[i][0] += gl.xres + 10.0;
+		}
+	}
+
+	if (gl.walk && gl.result == 1) {
+		//man is walking...
+		//when time is up, advance the frame.
+		timers.recordTime(&timers.timeCurrent);
+		double timeSpan = timers.timeDiff(&timers.walkTime, &timers.timeCurrent);
+		if (timeSpan > gl.delay) {
+			//advance
+			++gl.walkFrame;
+			if (gl.walkFrame >= 16)
+				gl.walkFrame -= 16;
+			timers.recordTime(&timers.walkTime);
+		}
+		for (int i=0; i<20; i++) {
+			gl.box[i][0] += 2.0 * (0.05 / gl.delay);
+			if (gl.box[i][0] > 800.0)
+				gl.box[i][0] -= gl.xres;
+		}
+	}
+
+
 	if (gl.walk || gl.keys[XK_Right]) {
 		//man is walking...
 		//when time is up, advance the frame.
@@ -403,7 +443,7 @@ void physics(void)
 		}
 		for (int i=0; i<20; i++) {
 			gl.box[i][0] -= 2.0 * (0.05 / gl.delay);
-			if (gl.box[i][0] < -10.0)
+			if (gl.box[i][0] < -100.0)
 				gl.box[i][0] += gl.xres + 10.0;
 		}
 	}
@@ -422,8 +462,8 @@ void physics(void)
 		}
 		for (int i=0; i<20; i++) {
 			gl.box[i][0] += 2.0 * (0.05 / gl.delay);
-			if (gl.box[i][0] < -10.0)
-				gl.box[i][0] += gl.xres + 10.0;
+			if (gl.box[i][0] > 800.0)
+				gl.box[i][0] -= gl.xres;
 		}
 	}
 }
@@ -457,7 +497,7 @@ void render(void)
 	glEnd();
 	//
 	//show boxes as background
-	for (int i=0; i<20; i++) {
+	for (int i=0; i<20; i++) { 
 		glPushMatrix();
 		glTranslated(gl.box[i][0],gl.box[i][1],gl.box[i][2]);
 		glColor3f(0.2, 0.2, 0.2);
