@@ -345,6 +345,40 @@ void checkMouse(XEvent *e)
 	}
 }
 
+void screenCapture()
+{
+	static int num = 0;
+	unsigned char *data = new unsigned char[gl.xres*gl.yres*3];
+	glReadPixels(0, 0, gl.xres, gl.yres, GL_RGB, GL_UNSIGNED_BYTE, data);
+	char ts[64];
+	sprintf(ts, "pic%03i.ppm", num++);
+	FILE *fpo = fopen(ts,"w");
+	if (fpo)
+	{
+		fprintf(fpo, "P6\n");
+		fprintf(fpo, "%i %i\n", gl.xres, gl.yres);
+		fprintf(fpo, "255\n");
+		unsigned char *p = data;
+		p += ((gl.yres-1) * gl.xres*3);
+		/*for (int i = 0; i < (gl.xres*gl.xres*3); i++)
+		{
+			fprintf(fpo, "%c", *(p+i));
+		}*/
+		for (int i = 0; i < gl.yres; i++)
+		{
+			for (int j = 0; j < (gl.xres*3); j++)
+			{
+				fprintf(fpo, "%c", *(p+j));
+			}
+			p = p - (gl.xres*3);
+		}
+
+		fclose(fpo);
+	}
+
+	delete [] data;
+}
+
 void checkKeys(XEvent *e)
 {
 	//keyboard input?
@@ -370,14 +404,17 @@ void checkKeys(XEvent *e)
 	}
 	if (shift) {}
 	switch (key) {
+		case XK_s:
+		    screenCapture();
+			break;
 		case XK_w:
 			timers.recordTime(&timers.walkTime);
 			gl.walk ^= 1;
 			break;
         case XK_e:
             timers.recordTime(&timers.explosionTime);
-            gl.explode ^=1;
-            break;
+           	gl.explode ^=1;
+       		break;
 		case XK_Left:
 			break;
 		case XK_Right:
@@ -438,7 +475,7 @@ void physics(void)
 		}
 		for (int i=0; i<20; i++) {
 			gl.box[i][0] -= 2.0 * (0.05 / gl.delay);
-			if (gl.box[i][0] < -100.0)
+			if (gl.box[i][0] < -10.0)
 				gl.box[i][0] += gl.xres + 10.0;
 		}
 	}
@@ -457,8 +494,8 @@ void physics(void)
 		}
 		for (int i=0; i<20; i++) {
 			gl.box[i][0] += 2.0 * (0.05 / gl.delay);
-			if (gl.box[i][0] > 800.0)
-				gl.box[i][0] -= gl.xres;
+			if (gl.box[i][0] > gl.xres + 10.0)
+				gl.box[i][0] -= gl.xres + 10.0;
 		}
 	}
 
@@ -477,7 +514,7 @@ void physics(void)
 		}
 		for (int i=0; i<20; i++) {
 			gl.box[i][0] -= 2.0 * (0.05 / gl.delay);
-			if (gl.box[i][0] < -100.0)
+			if (gl.box[i][0] < -10.0)
 				gl.box[i][0] += gl.xres + 10.0;
 		}
 	}
@@ -496,8 +533,8 @@ void physics(void)
 		}
 		for (int i=0; i<20; i++) {
 			gl.box[i][0] += 2.0 * (0.05 / gl.delay);
-			if (gl.box[i][0] > 800.0)
-				gl.box[i][0] -= gl.xres;
+			if (gl.box[i][0] > gl.xres + 10.0)
+				gl.box[i][0] -= gl.xres + 10.0;
 		}
 	}
 
@@ -719,6 +756,8 @@ void render(void)
 	ggprint8b(&r, 16, c, "frame: %i", gl.walkFrame);
 	ggprint8b(&r, 16, c, "e    Explosion");
 	ggprint8b(&r, 16, c, "frame: %i", gl.explosionFrame);
+	ggprint8b(&r, 16, c, "S   Screen Capture");
+
 }
 
 
