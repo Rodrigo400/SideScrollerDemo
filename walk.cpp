@@ -1,5 +1,6 @@
 //modified by: Rodrigo Garcia-Novoa
-
+//date modified: 6/12/17
+//Purpose: Add explosion and animation in both directions
 
 //3350
 //program: walk.cpp
