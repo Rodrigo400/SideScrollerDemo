@@ -1038,11 +1038,11 @@ void render(void)
 		//update text from public_html
 		timers.recordTime(&timers.timeCurrent);
 		double timeSpan = timers.timeDiff(&timers.msgstrTime, &timers.timeCurrent);
-		if (timeSpan > gl.msgstrdelay) 
+        if (timeSpan > gl.msgstrdelay) 
 		{
             lab3http(gl.msgstr);
             //ggprint8b(&r, 16, 0xffffff, gl.msgstr);
-			timers.recordTime(&timers.msgstrTime);
+            timers.recordTime(&timers.msgstrTime);
 		}
 		//lab3http(gl.msgstr);
 		ggprint8b(&r, 16, 0x000000, gl.msgstr); 		
@@ -1082,9 +1082,9 @@ void render(void)
 		{
             lab3http(gl.msgstr);
             //ggprint8b(&r, 16, 0xffffff, gl.msgstr);
-			timers.recordTime(&timers.msgstrTime);
-		}
-		//lab3http(gl.msgstr);
+            timers.recordTime(&timers.msgstrTime);
+        }
+        //lab3http(gl.msgstr);
 		ggprint8b(&r, 16, 0xffffff, gl.msgstr);
 	}		
 }
