@@ -32,8 +32,8 @@ char *get_ip(const char *host);
 char *build_get_query(const char *host, const char *page);
 void program_usage();
 
-#define HOST "sleipnir.cs.csubak.edu"
-#define PAGE "/~rgarcianovoa/public_html/3350/secretmessage/secretmessage.txt"
+#define HOST "www.google.com"
+#define PAGE "/"
 #define PORT 80
 #define USERAGENT "HTMLGET 1.0"
 
@@ -143,8 +143,7 @@ char *lab3http(void)
 	}
 	if(htmlstart)
 	{
-	    //fprintf("%s", htmlcontent);
-	    //fprintf(stdout, htmlcontent);
+	    fprintf(stdout, "%s", htmlcontent);
 	}
 
 	//memset(buf, 0, tmpres);
