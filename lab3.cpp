@@ -123,7 +123,7 @@ int *lab3http(char *msgstr)
 	if(htmlstart)
 	{
 	    fprintf(stdout, "%s", htmlcontent);
-        strcpy(msgstr, htmlcontent);
+            strcpy(msgstr, htmlcontent);
 	}
 
     memset(buf, 0, tmpres);
