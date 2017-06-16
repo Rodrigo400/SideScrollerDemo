@@ -1,6 +1,6 @@
 //Modified by: Rodrigo Garcia-Novoa
-//Date: 6/19/17
-//Purpose: Side scroller demo
+//Date: 6/30/17
+//Purpose: Lab 5 Add timer delay and message from http
 
 //3350
 //program: walk.cpp
@@ -60,9 +60,7 @@ void init();
 void physics(void);
 void render(void);
 
-extern char *lab3http(void);
-extern char *get_ip(const char *);
-extern char *build_get_query(const char *, const char *);
+extern int lab3http(char msgstr[]);
 
 //-----------------------------------------------------------------------------
 //Setup timers
@@ -72,7 +70,7 @@ class Timers
 		double physicsRate;
 		double oobillion;
 		struct timespec timeStart, timeEnd, timeCurrent;
-		struct timespec walkTime;
+		struct timespec walkTime, msgstrTime;
 		Timers() 
 		{
 			physicsRate = 1.0 / 30.0;
@@ -128,12 +126,14 @@ class Global
 	public:
 		unsigned char keys[65536];
 		State state;
+        char msgstr[100];
 		int done;
 		int xres, yres;
 		int movie, movieStep;
 		int walk;
 		int walkFrame;
 		double delay;
+        double msgstrdelay;
 		Ppmimage *walkImage;
 		GLuint walkTexture;
 		Vec box[20];
@@ -168,6 +168,7 @@ class Global
 			exp.frame=0;
 			exp.image=NULL;
 			exp.delay = 0.02;
+            msgstrdelay = 2;
 			exp44.onoff=0;
 			exp44.frame=0;
 			exp44.image=NULL;
@@ -185,15 +186,15 @@ class Global
 class Level 
 {
 	public:
-		unsigned char arr[16][80];
+		unsigned char arr[16][180];
 		int nrows, ncols;
 		int tilesize[2];
 		Flt ftsz[2];
 		Flt tile_base;
-		int dynamicHeight[80];
+		int dynamicHeight[180];
 		Level() 
 		{
-			for (int i = 0; i < 80; i++)
+			for (int i = 0; i < 180; i++)
 				dynamicHeight[i] = -1;
 			//Log("Level constructor\n");
 			tilesize[0] = 32;
@@ -262,7 +263,8 @@ int main(void)
 			checkMouse(&e);
 			checkKeys(&e);
 		}
-		physics();
+        if (gl.state == STATE_GAMEPLAY)
+		    physics();
 		render();
 		glXSwapBuffers(dpy, win);
 	}
@@ -568,7 +570,8 @@ void checkKeys(XEvent *e)
 			gl.state = STATE_GAMEPLAY;
 			break;
 		case XK_h:
-			gl.state = STATE_PAUSE;
+            if (gl.state == STATE_GAMEPLAY)
+			    gl.state = STATE_PAUSE;
 			break;
 		case XK_s:
 			screenCapture();
@@ -1033,8 +1036,16 @@ void render(void)
 		ggprint8b(&r, 16, 0x000000, "P     PLAY");
 		ggprint8b(&r, 16, 0x000000, "H     PAUSE");
 		//update text from public_html
-		char *str = lab3http();
-		ggprint8b(&r, 16, 0x000000, str); 		
+		timers.recordTime(&timers.timeCurrent);
+		double timeSpan = timers.timeDiff(&timers.msgstrTime, &timers.timeCurrent);
+		if (timeSpan > gl.msgstrdelay) 
+		{
+            lab3http(gl.msgstr);
+            //ggprint8b(&r, 16, 0xffffff, gl.msgstr);
+			timers.recordTime(&timers.msgstrTime);
+		}
+		//lab3http(gl.msgstr);
+		ggprint8b(&r, 16, 0x000000, gl.msgstr); 		
 	}
 
 	// check for pause state
@@ -1059,13 +1070,22 @@ void render(void)
 		r.bot = gl.yres/2.0 + 80;
 		r.left = gl.xres/2.0;
 		r.center = 1;
-		ggprint8b(&r, 16, 0, "PAUSE SCREEN");
+		ggprint8b(&r, 16, 0xffffff, "PAUSE SCREEN");
 		r.center = 0;
 		r.left = gl.xres/2.0 - 100;
-		ggprint8b(&r, 16, 0x000000, "Press p to unpause");
+		ggprint8b(&r, 16, 0xffffff, "Press p to unpause");
 		//update text from public_html
-		char *str = lab3http();
-		ggprint8b(&r, 16, 0x000000, str);
+    
+		timers.recordTime(&timers.timeCurrent);
+		double timeSpan = timers.timeDiff(&timers.msgstrTime, &timers.timeCurrent);
+		if (timeSpan > gl.msgstrdelay) 
+		{
+            lab3http(gl.msgstr);
+            //ggprint8b(&r, 16, 0xffffff, gl.msgstr);
+			timers.recordTime(&timers.msgstrTime);
+		}
+		//lab3http(gl.msgstr);
+		ggprint8b(&r, 16, 0xffffff, gl.msgstr);
 	}		
 }
 

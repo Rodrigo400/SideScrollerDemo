@@ -37,7 +37,7 @@ void program_usage();
 #define PORT 80
 #define USERAGENT "HTMLGET 1.0"
 
-char *lab3http(void)
+int *lab3http(char *msgstr)
 {
     struct sockaddr_in *remote;
     int sock;
@@ -123,7 +123,10 @@ char *lab3http(void)
 	if(htmlstart)
 	{
 	    fprintf(stdout, "%s", htmlcontent);
+        strcpy(msgstr, htmlcontent);
 	}
+
+    memset(buf, 0, tmpres);
 
     }
 
@@ -132,11 +135,13 @@ char *lab3http(void)
 	perror("Error receiving data");
     }
 
+    //strcpy(msgstr, htmlcontent);
+
     free(get);
     free(remote);
     free(ip);
     close(sock);
-    return htmlcontent;
+    return 0;
 }
 
 void program_usage()
