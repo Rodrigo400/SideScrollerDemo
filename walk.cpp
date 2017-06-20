@@ -10,6 +10,7 @@
 //Walk cycle using a sprite sheet.
 //images courtesy: http://games.ucla.edu/resource/walk-cycles/
 //
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,6 +23,8 @@
 #include "log.h"
 #include "ppm.h"
 #include "fonts.h"
+
+using namespace std;
 
 //defined types
 typedef double Flt;
@@ -160,7 +163,10 @@ class Level {
 		int tilesize[2];
 		Flt ftsz[2];
 		Flt tile_base;
+		int dynamicHeight[80];
 		Level() {
+			for (int i = 0; i < 80; i++)
+				dynamicHeight[i] = -1;
 			//Log("Level constructor\n");
 			tilesize[0] = 32;
 			tilesize[1] = 32;
@@ -638,20 +644,45 @@ void physics(void)
 		}
 	}
 
+
 	// move the ball
 	gl.ball_pos[1] += gl.ball_vel[1];
 	gl.ball_vel[1] -= 0.7;
 	Flt dd = lev.ftsz[0];
-	int col = (int)(gl.camera[0] / dd) + (500.0 / lev.tilesize[0] + 1);
+	int col = (int)(gl.camera[0] / dd) + (500.0 / lev.tilesize[0] + 1.00);
 	col = col % lev.ncols;
 	int hgt = 0.0;
-	for (int i = 0; i < lev.nrows; i++)
+
+	/*for (int i = 0; i < lev.nrows; i++)
 	{
 		if (lev.arr[i][col] != ' ')
 		{
 			hgt = i;
 			break;
 		}
+	}*/
+
+	//check for saved height value
+	if (lev.dynamicHeight[col] != -1)
+	{
+		//set hgt to array value
+		hgt = lev.dynamicHeight[col];
+	}
+	else
+	{
+		for (int i = 0; i < lev.nrows; i++)
+		{
+			if (lev.arr[i][col] != ' ')
+			{
+				hgt = i;
+				lev.dynamicHeight[col] = i;
+				break;
+			}
+		}
+		cout << "Column " << col << " RECALCULATED" << endl;
+		
+		//save height value in array
+		//hgt = lev.dynamicHeight[col];
 	}
 
 	//height of ball is (nrows-1-i)*tile_height + starting point.
@@ -760,10 +791,10 @@ void render(void)
 	glPushMatrix();
 	glTranslated(gl.ball_pos[0],gl.ball_pos[1],0);
 	glBegin(GL_QUADS);
-		glVertex2i( 0,  0);
-		glVertex2i( 0, 10);
-		glVertex2i(10, 10);
-		glVertex2i(10,  0);
+	glVertex2i( 0,  0);
+	glVertex2i( 0, 10);
+	glVertex2i(10, 10);
+	glVertex2i(10,  0);
 	glEnd();
 	glPopMatrix();
 
@@ -779,12 +810,13 @@ void render(void)
 	//glEnd();
 	//
 	//
-	float h = 200.0;
+	//
+	//Draw Person
+	float h = 100.0;
 	float w = h * 0.5;
 	glPushMatrix();
 	glColor3f(1.0, 1.0, 1.0);
 	glBindTexture(GL_TEXTURE_2D, gl.walkTexture);
-	//
 	glEnable(GL_ALPHA_TEST);
 	glAlphaFunc(GL_GREATER, 0.0f);
 	glColor4ub(255,255,255,255);
