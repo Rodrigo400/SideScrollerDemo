@@ -60,6 +60,10 @@ void init();
 void physics(void);
 void render(void);
 
+extern char *lab3http(void);
+extern char *get_ip(const char *);
+extern char *build_get_query(const char *, const char *);
+
 //-----------------------------------------------------------------------------
 //Setup timers
 class Timers {
@@ -102,10 +106,18 @@ class Sprite {
 		}
 };
 
+enum State {
+	STATE_NONE,
+	STATE_STARTUP,
+	STATE_GAMEPLAY,
+	STATE_GAMEOVER
+
+};
 
 class Global {
 	public:
 		unsigned char keys[65536];
+		State state;
 		int done;
 		int xres, yres;
 		int movie, movieStep;
@@ -126,6 +138,7 @@ class Global {
 		}
 		Global() {
 			logOpen();
+			state = STATE_STARTUP;;
 			camera[0] = camera[1] = 0.0;
 			ball_pos[0] = 500;
 			ball_pos[1] = ball_pos[2] = 0.0;
@@ -508,6 +521,9 @@ void checkKeys(XEvent *e)
 	}
 	if (shift) {}
 	switch (key) {
+		case XK_p:
+			gl.state = STATE_GAMEPLAY;
+			break;
 		case XK_s:
 			screenCapture();
 			break;
@@ -901,8 +917,8 @@ void render(void)
 	r.bot = gl.yres - 20;
 	r.left = 10;
 	r.center = 0;
-	ggprint8b(&r, 16, c, "W   Walk cycle");
-	ggprint8b(&r, 16, c, "E   Explosion");
+	ggprint8b(&r, 16, c, "w   walk cycle");
+	ggprint8b(&r, 16, c, "e   explosion");
 	ggprint8b(&r, 16, c, "+   faster");
 	ggprint8b(&r, 16, c, "-   slower");
 	ggprint8b(&r, 16, c, "right arrow -> walk right");
@@ -911,6 +927,39 @@ void render(void)
 	if (gl.movie) {
 		screenCapture();
 	}
+	//
+	//check for startup state
+	if (gl.state == STATE_STARTUP) {
+		h = 100.0;
+		w = 200.0;
+		glPushMatrix();
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glColor4f(1.0, 1.0, 0.0, 0.8);
+		glTranslated(gl.xres/2.0, gl.yres/2.0, 0);
+		glBegin(GL_QUADS);
+			glVertex2i(-w, -h);
+			glVertex2i(-w, h);
+			glVertex2i(w, h);
+			glVertex2i(w, -h);
+		glEnd();
+		glDisable(GL_BLEND);
+		glPopMatrix();
+
+		r.bot = gl.yres/2.0 + 80;
+		r.left = gl.xres/2.0;
+		r.center = 1;
+		ggprint8b(&r, 16, 0, "STARTUP SCREEN");
+		r.center = 0;
+		r.left = gl.xres/2.0 - 100;
+		ggprint8b(&r, 16, 0x000000, "W     WALK CYCLE");
+		ggprint8b(&r, 16, 0x000000, "P     PLAY");
+
+		//update text from public_html
+		char *str = lab3http();
+		ggprint8b(&r, 16, 0x000000, str); 		
+
+	}		
 }
 
 
