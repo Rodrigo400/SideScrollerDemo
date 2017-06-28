@@ -567,6 +567,9 @@ void checkKeys(XEvent *e)
 		case XK_p:
 			gl.state = STATE_GAMEPLAY;
 			break;
+		case XK_h:
+			gl.state = STATE_PAUSE;
+			break;
 		case XK_s:
 			screenCapture();
 			break;
@@ -1028,18 +1031,42 @@ void render(void)
 		r.left = gl.xres/2.0 - 100;
 		ggprint8b(&r, 16, 0x000000, "W     WALK CYCLE");
 		ggprint8b(&r, 16, 0x000000, "P     PLAY");
-
+		ggprint8b(&r, 16, 0x000000, "H     PAUSE");
 		//update text from public_html
 		char *str = lab3http();
 		ggprint8b(&r, 16, 0x000000, str); 		
-
 	}
 
 	// check for pause state
 	if (gl.state == STATE_PAUSE) 
 	{
+		h = 100.0;
+		w = 200.0;
+		glPushMatrix();
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glColor4f(0.0, 0.0, 1.0, 0.7);
+		glTranslated(gl.xres/2.0, gl.yres/2.0, 0);
+		glBegin(GL_QUADS);
+			glVertex2i(-w, -h);
+			glVertex2i(-w, h);
+			glVertex2i(w, h);
+			glVertex2i(w, -h);
+		glEnd();
+		glDisable(GL_BLEND);
+		glPopMatrix();
 
-
+		r.bot = gl.yres/2.0 + 80;
+		r.left = gl.xres/2.0;
+		r.center = 1;
+		ggprint8b(&r, 16, 0, "PAUSE SCREEN");
+		r.center = 0;
+		r.left = gl.xres/2.0 - 100;
+		ggprint8b(&r, 16, 0x000000, "Press p to unpause");
+		//update text from public_html
+		char *str = lab3http();
+		ggprint8b(&r, 16, 0x000000, str);
+	}		
 }
 
 
