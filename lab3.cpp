@@ -45,28 +45,6 @@ char *lab3http(void)
     char *ip;
     char *get;
     char buf[BUFSIZ+1];
-    //const char *host;
-
-    // Fixed warning: deprecated conversion from string constant to 'char*'
-    // char *page
-    //const char *page;
-
-    /*if (argc == 1)
-    {
-	program_usage();
-	exit(2);
-    }
-
-    host = argv[1];
-
-    if (argc > 2)
-    {
-	page = argv[2];
-    }
-    else
-    {
-	page = PAGE;
-    }*/
 
     char hosttxt[] = "sleipnir.cs.csubak.edu";
     char pagetxt[] = "/~rgarcianovoa/3350/secretmessage/secret.txt";
@@ -146,7 +124,6 @@ char *lab3http(void)
 	    fprintf(stdout, "%s", htmlcontent);
 	}
 
-	//memset(buf, 0, tmpres);
     }
 
     if(tmpres < 0)
