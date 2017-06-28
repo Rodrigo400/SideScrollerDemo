@@ -66,30 +66,36 @@ extern char *build_get_query(const char *, const char *);
 
 //-----------------------------------------------------------------------------
 //Setup timers
-class Timers {
+class Timers 
+{
 	public:
 		double physicsRate;
 		double oobillion;
 		struct timespec timeStart, timeEnd, timeCurrent;
 		struct timespec walkTime;
-		Timers() {
+		Timers() 
+		{
 			physicsRate = 1.0 / 30.0;
 			oobillion = 1.0 / 1e9;
 		}
-		double timeDiff(struct timespec *start, struct timespec *end) {
+		double timeDiff(struct timespec *start, struct timespec *end) 
+		{
 			return (double)(end->tv_sec - start->tv_sec ) +
 				(double)(end->tv_nsec - start->tv_nsec) * oobillion;
 		}
-		void timeCopy(struct timespec *dest, struct timespec *source) {
+		void timeCopy(struct timespec *dest, struct timespec *source) 
+		{
 			memcpy(dest, source, sizeof(struct timespec));
 		}
-		void recordTime(struct timespec *t) {
+		void recordTime(struct timespec *t) 
+		{
 			clock_gettime(CLOCK_REALTIME, t);
 		}
 } timers;
 //-----------------------------------------------------------------------------
 
-class Sprite {
+class Sprite 
+{
 	public:
 		int onoff;
 		int frame;
@@ -98,7 +104,8 @@ class Sprite {
 		Ppmimage *image;
 		GLuint tex;
 		struct timespec time;
-		Sprite() {
+		Sprite() 
+		{
 			onoff = 0;
 			frame = 0;
 			image = NULL;
@@ -106,15 +113,18 @@ class Sprite {
 		}
 };
 
-enum State {
+enum State 
+{
 	STATE_NONE,
 	STATE_STARTUP,
+	STATE_PAUSE,
 	STATE_GAMEPLAY,
 	STATE_GAMEOVER
 
 };
 
-class Global {
+class Global 
+{
 	public:
 		unsigned char keys[65536];
 		State state;
@@ -133,10 +143,12 @@ class Global {
 		Flt camera[2];
 		Vec ball_pos;
 		Vec ball_vel;
-		~Global() {
+		~Global() 
+		{
 			logClose();
 		}
-		Global() {
+		Global() 
+		{
 			logOpen();
 			state = STATE_STARTUP;;
 			camera[0] = camera[1] = 0.0;
@@ -160,7 +172,8 @@ class Global {
 			exp44.frame=0;
 			exp44.image=NULL;
 			exp44.delay = 0.022;
-			for (int i=0; i<20; i++) {
+			for (int i=0; i<20; i++) 
+			{
 				box[i][0] = rnd() * xres;
 				box[i][1] = rnd() * (yres-220) + 220.0;
 				box[i][2] = 0.0;
@@ -169,7 +182,8 @@ class Global {
 		}
 } gl;
 
-class Level {
+class Level 
+{
 	public:
 		unsigned char arr[16][80];
 		int nrows, ncols;
@@ -177,7 +191,8 @@ class Level {
 		Flt ftsz[2];
 		Flt tile_base;
 		int dynamicHeight[80];
-		Level() {
+		Level() 
+		{
 			for (int i = 0; i < 80; i++)
 				dynamicHeight[i] = -1;
 			//Log("Level constructor\n");
@@ -188,15 +203,18 @@ class Level {
 			tile_base = 220.0;
 			//read level
 			FILE *fpi = fopen("level1.txt","r");
-			if (fpi) {
+			if (fpi) 
+			{
 				nrows=0;
 				char line[100];
-				while (fgets(line, 100, fpi) != NULL) {
+				while (fgets(line, 100, fpi) != NULL) 
+				{
 					removeCrLf(line);
 					int slen = strlen(line);
 					ncols = slen;
 					//Log("line: %s\n", line);
-					for (int j=0; j<slen; j++) {
+					for (int j=0; j<slen; j++) 
+					{
 						arr[nrows][j] = line[j];
 					}
 					++nrows;
@@ -204,17 +222,22 @@ class Level {
 				fclose(fpi);
 				//printf("nrows of background data: %i\n", nrows);
 			}
-			for (int i=0; i<nrows; i++) {
-				for (int j=0; j<ncols; j++) {
+			for (int i=0; i<nrows; i++) 
+			{
+				for (int j=0; j<ncols; j++) 
+				{
 					printf("%c", arr[i][j]);
 				}
 				printf("\n");
 			}
 		}
-		void removeCrLf(char *str) {
+		void removeCrLf(char *str) 
+		{
 			char *p = str;
-			while (*p) {
-				if (*p == 10 || *p == 13) {
+			while (*p) 
+			{
+				if (*p == 10 || *p == 13) 
+				{
 					*p = '\0';
 					break;
 				}
@@ -229,8 +252,10 @@ int main(void)
 	initXWindows();
 	initOpengl();
 	init();
-	while (!gl.done) {
-		while (XPending(dpy)) {
+	while (!gl.done) 
+	{
+		while (XPending(dpy)) 
+		{
 			XEvent e;
 			XNextEvent(dpy, &e);
 			checkResize(&e);
@@ -272,13 +297,15 @@ void initXWindows(void)
 	XSetWindowAttributes swa;
 	setupScreenRes(gl.xres, gl.yres);
 	dpy = XOpenDisplay(NULL);
-	if (dpy == NULL) {
+	if (dpy == NULL) 
+	{
 		printf("\n\tcannot connect to X server\n\n");
 		exit(EXIT_FAILURE);
 	}
 	Window root = DefaultRootWindow(dpy);
 	XVisualInfo *vi = glXChooseVisual(dpy, 0, att);
-	if (vi == NULL) {
+	if (vi == NULL) 
+	{
 		printf("\n\tno appropriate visual found\n\n");
 		exit(EXIT_FAILURE);
 	} 
@@ -319,7 +346,8 @@ unsigned char *buildAlphaData(Ppmimage *img)
 	unsigned char t0 = *(data+0);
 	unsigned char t1 = *(data+1);
 	unsigned char t2 = *(data+2);
-	for (i=0; i<img->width * img->height * 3; i+=3) {
+	for (i=0; i<img->width * img->height * 3; i+=3) 
+	{
 		a = *(data+0);
 		b = *(data+1);
 		c = *(data+2);
@@ -427,7 +455,8 @@ void checkResize(XEvent *e)
 	if (e->type != ConfigureNotify)
 		return;
 	XConfigureEvent xce = e->xconfigure;
-	if (xce.width != gl.xres || xce.height != gl.yres) {
+	if (xce.width != gl.xres || xce.height != gl.yres) 
+	{
 		//Window size did change.
 		reshapeWindow(xce.width, xce.height);
 	}
@@ -444,18 +473,23 @@ void checkMouse(XEvent *e)
 	static int savex = 0;
 	static int savey = 0;
 	//
-	if (e->type == ButtonRelease) {
+	if (e->type == ButtonRelease) 
+	{
 		return;
 	}
-	if (e->type == ButtonPress) {
-		if (e->xbutton.button==1) {
+	if (e->type == ButtonPress) 
+	{
+		if (e->xbutton.button==1) 
+		{
 			//Left button is down
 		}
-		if (e->xbutton.button==3) {
+		if (e->xbutton.button==3) 
+		{
 			//Right button is down
 		}
 	}
-	if (savex != e->xbutton.x || savey != e->xbutton.y) {
+	if (savex != e->xbutton.x || savey != e->xbutton.y) 
+	{
 		//Mouse moved
 		savex = e->xbutton.x;
 		savey = e->xbutton.y;
@@ -466,7 +500,8 @@ void screenCapture()
 {
 	static int fnum = 0;
 	static int vid = 0;
-	if (!vid) {
+	if (!vid) 
+	{
 		system("mkdir ./vid");
 		vid = 1;
 	}
@@ -475,14 +510,16 @@ void screenCapture()
 	char ts[32];
 	sprintf(ts, "./vid/pic%03i.ppm", fnum);
 	FILE *fpo = fopen(ts,"w");	
-	if (fpo) {
+	if (fpo) 
+	{
 		fprintf(fpo, "P6\n%i %i\n255\n", gl.xres, gl.yres);
 		unsigned char *p = data;
 		//go backwards a row at a time...
 		p = p + ((gl.yres-1) * gl.xres * 3);
 		unsigned char *start = p;
 		for (int i=0; i<gl.yres; i++) {
-			for (int j=0; j<gl.xres*3; j++) {
+			for (int j=0; j<gl.xres*3; j++) 
+			{
 				fprintf(fpo, "%c",*p);
 				++p;
 			}
@@ -504,23 +541,29 @@ void checkKeys(XEvent *e)
 	static int shift=0;
 	int key = XLookupKeysym(&e->xkey, 0);
 	gl.keys[key]=1;
-	if (e->type == KeyRelease) {
+	if (e->type == KeyRelease) 
+	{
 		gl.keys[key]=0;
 		if (key == XK_Shift_L || key == XK_Shift_R)
 			shift=0;
 		return;
 	}
-	if (e->type == KeyPress) {
+	if (e->type == KeyPress) 
+	{
 		gl.keys[key]=1;
-		if (key == XK_Shift_L || key == XK_Shift_R) {
+		if (key == XK_Shift_L || key == XK_Shift_R) 
+		{
 			shift=1;
 			return;
 		}
-	} else {
+	} 
+	else 
+	{
 		return;
 	}
 	if (shift) {}
-	switch (key) {
+	switch (key) 
+	{
 		case XK_p:
 			gl.state = STATE_GAMEPLAY;
 			break;
@@ -577,7 +620,8 @@ Flt VecNormalize(Vec vec)
 	Flt ylen = vec[1];
 	Flt zlen = vec[2];
 	len = xlen*xlen + ylen*ylen + zlen*zlen;
-	if (len == 0.0) {
+	if (len == 0.0) 
+	{
 		MakeVector(0.0,0.0,1.0,vec);
 		return 1.0;
 	}
@@ -591,27 +635,33 @@ Flt VecNormalize(Vec vec)
 
 void physics(void)
 {
-	if (gl.walk || gl.keys[XK_Right] || gl.keys[XK_Left]) {
+	if (gl.walk || gl.keys[XK_Right] || gl.keys[XK_Left]) 
+	{
 		//man is walking...
 		//when time is up, advance the frame.
 		timers.recordTime(&timers.timeCurrent);
 		double timeSpan = timers.timeDiff(&timers.walkTime, &timers.timeCurrent);
-		if (timeSpan > gl.delay) {
+		if (timeSpan > gl.delay) 
+		{
 			//advance
 			++gl.walkFrame;
 			if (gl.walkFrame >= 16)
 				gl.walkFrame -= 16;
 			timers.recordTime(&timers.walkTime);
 		}
-		for (int i=0; i<20; i++) {
-			if (gl.keys[XK_Left]) {
+		for (int i=0; i<20; i++) 
+		{
+			if (gl.keys[XK_Left]) 
+			{
 				gl.box[i][0] += 1.0 * (0.05 / gl.delay);
 				if (gl.box[i][0] > gl.xres + 10.0)
 					gl.box[i][0] -= gl.xres + 10.0;
 				gl.camera[0] -= 2.0/lev.tilesize[0] * (0.05 / gl.delay);
 				if (gl.camera[0] < 0.0)
 					gl.camera[0] = 0.0;
-			} else {
+			} 
+			else 
+			{
 				gl.box[i][0] -= 1.0 * (0.05 / gl.delay);
 				if (gl.box[i][0] < -10.0)
 					gl.box[i][0] += gl.xres + 10.0;
@@ -620,41 +670,53 @@ void physics(void)
 					gl.camera[0] = 0.0;
 			}
 		}
-		if (gl.exp.onoff) {
+		if (gl.exp.onoff) 
+		{
 			gl.exp.pos[0] -= 2.0 * (0.05 / gl.delay);
 		}
-		if (gl.exp44.onoff) {
+		if (gl.exp44.onoff) 
+		{
 			gl.exp44.pos[0] -= 2.0 * (0.05 / gl.delay);
 		}
 	}
-	if (gl.exp.onoff) {
+	if (gl.exp.onoff) 
+	{
 		//explosion is happening
 		timers.recordTime(&timers.timeCurrent);
 		double timeSpan = timers.timeDiff(&gl.exp.time, &timers.timeCurrent);
-		if (timeSpan > gl.exp.delay) {
+		if (timeSpan > gl.exp.delay) 
+		{
 			//advance explosion frame
 			++gl.exp.frame;
-			if (gl.exp.frame >= 23) {
+			if (gl.exp.frame >= 23) 
+			{
 				//explosion is done.
 				gl.exp.onoff = 0;
 				gl.exp.frame = 0;
-			} else {
+			} 
+			else 
+			{
 				timers.recordTime(&gl.exp.time);
 			}
 		}
 	}
-	if (gl.exp44.onoff) {
+	if (gl.exp44.onoff) 
+	{
 		//explosion is happening
 		timers.recordTime(&timers.timeCurrent);
 		double timeSpan = timers.timeDiff(&gl.exp44.time, &timers.timeCurrent);
-		if (timeSpan > gl.exp44.delay) {
+		if (timeSpan > gl.exp44.delay) 
+		{
 			//advance explosion frame
 			++gl.exp44.frame;
-			if (gl.exp44.frame >= 16) {
+			if (gl.exp44.frame >= 16) 
+			{
 				//explosion is done.
 				gl.exp44.onoff = 0;
 				gl.exp44.frame = 0;
-			} else {
+			} 
+			else 
+			{
 				timers.recordTime(&gl.exp44.time);
 			}
 		}
@@ -730,7 +792,8 @@ void render(void)
 	glEnd();
 	//
 	//show boxes as background
-	for (int i=0; i<20; i++) {
+	for (int i=0; i<20; i++) 
+	{
 		glPushMatrix();
 		glTranslated(gl.box[i][0],gl.box[i][1],gl.box[i][2]);
 		glColor3f(0.2, 0.2, 0.2);
@@ -762,10 +825,13 @@ void render(void)
 	//offx: the offset to the left of the screen to start drawing tiles
 	Flt offx = -dec * dd;
 	//Log("gl.camera[0]: %lf   offx: %lf\n",gl.camera[0],offx);
-	for (int j=0; j<ncols_to_render; j++) {
+	for (int j=0; j<ncols_to_render; j++) 
+	{
 		int row = lev.nrows-1;
-		for (int i=0; i<lev.nrows; i++) {
-			if (lev.arr[row][col] == 'w') {
+		for (int i=0; i<lev.nrows; i++) 
+		{
+			if (lev.arr[row][col] == 'w') 
+			{
 				glColor3f(0.8, 0.8, 0.6);
 				glPushMatrix();
 				Vec tr = { (Flt)j*dd+offx, (Flt)i*lev.ftsz[1]+offy, 0 };
@@ -780,7 +846,8 @@ void render(void)
 				glEnd();
 				glPopMatrix();
 			}
-			if (lev.arr[row][col] == 'b') {
+			if (lev.arr[row][col] == 'b') 
+			{
 				glColor3f(0.9, 0.2, 0.2);
 				glPushMatrix();
 				Vec tr = { (Flt)j*dd+offx, (Flt)i*lev.ftsz[1]+offy, 0 };
@@ -846,12 +913,15 @@ void render(void)
 	if (gl.keys[XK_Left])
 		rgt=0;
 	glBegin(GL_QUADS);
-	if (rgt) {
+	if (rgt) 
+	{
 		glTexCoord2f(tx,      ty+.5); glVertex2i(cx-w, cy-h);
 		glTexCoord2f(tx,      ty);    glVertex2i(cx-w, cy+h);
 		glTexCoord2f(tx+.125, ty);    glVertex2i(cx+w, cy+h);
 		glTexCoord2f(tx+.125, ty+.5); glVertex2i(cx+w, cy-h);
-	} else {
+	} 
+	else 
+	{
 		glTexCoord2f(tx+.125, ty+.5); glVertex2i(cx-w, cy-h);
 		glTexCoord2f(tx+.125, ty);    glVertex2i(cx-w, cy+h);
 		glTexCoord2f(tx,      ty);    glVertex2i(cx+w, cy+h);
@@ -863,7 +933,8 @@ void render(void)
 	glDisable(GL_ALPHA_TEST);
 	//
 	//
-	if (gl.exp.onoff) {
+	if (gl.exp.onoff) 
+	{
 		h = 80.0;
 		w = 80.0;
 		glPushMatrix();
@@ -889,7 +960,8 @@ void render(void)
 	}
 	//
 	//
-	if (gl.exp44.onoff) {
+	if (gl.exp44.onoff) 
+	{
 		h = 80.0;
 		w = 80.0;
 		glPushMatrix();
@@ -924,12 +996,14 @@ void render(void)
 	ggprint8b(&r, 16, c, "right arrow -> walk right");
 	ggprint8b(&r, 16, c, "left arrow  <- walk left");
 	ggprint8b(&r, 16, c, "frame: %i", gl.walkFrame);
-	if (gl.movie) {
+	if (gl.movie) 
+	{
 		screenCapture();
 	}
 	//
 	//check for startup state
-	if (gl.state == STATE_STARTUP) {
+	if (gl.state == STATE_STARTUP) 
+	{
 		h = 100.0;
 		w = 200.0;
 		glPushMatrix();
@@ -959,7 +1033,13 @@ void render(void)
 		char *str = lab3http();
 		ggprint8b(&r, 16, 0x000000, str); 		
 
-	}		
+	}
+
+	// check for pause state
+	if (gl.state == STATE_PAUSE) 
+	{
+
+
 }
 
 

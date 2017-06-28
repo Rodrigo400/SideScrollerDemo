@@ -101,7 +101,8 @@ char *lab3http(void)
     int htmlstart = 0;
     char *htmlcontent;
 
-    while ((tmpres = recv(sock, buf, BUFSIZ, 0)) > 0){
+    while ((tmpres = recv(sock, buf, BUFSIZ, 0)) > 0)
+    {
 	if (htmlstart == 0)
 	{
 	    /* Under certain conditions this will not work.
