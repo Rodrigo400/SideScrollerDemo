@@ -292,6 +292,23 @@ void setupScreenRes(const int w, const int h)
     gl.yres = h;
 }
 
+#ifdef UNIT_TEST2
+void unittest_setupscreenres()
+{
+    int w = 800;
+    int h = 600;
+    setupScreenRes(w, h);
+    if (gl.xres != 800 && gl.yres != 600)
+    {
+        printf("unit test failed. Xres: %d Yres: %d\n", gl.xres, gl.yres);
+    }
+    else
+    {
+        printf("unit test succesful.\n");
+    } 
+}
+#endif //UNIT_TEST2
+
 void initXWindows(void)
 {
     GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
@@ -570,6 +587,12 @@ void checkKeys(XEvent *e)
         case XK_a:
             void unitTest_normalize();
             unitTest_normalize();
+            break;
+#endif
+#ifdef UNIT_TEST2
+        case XK_b:
+            void unittest_setupscreenres();
+            unittest_setupscreenres();
             break;
 #endif
         case XK_p:
